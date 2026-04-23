@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "type": "module",
- "scripts": {
-  "start": "node server/index.js",
-  "dev": "nodemon server/index.js"
-},
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -18,5 +18,8 @@
     "firebase-admin": "^11.0.1",
     "mongoose": "^6.5.3",
     "socket.io": "^4.5.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
   }
 }
