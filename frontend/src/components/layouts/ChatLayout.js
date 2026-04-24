@@ -21,11 +21,10 @@ export default function ChatLayout() {
   const socket = useRef();
   const { currentUser } = useAuth();
 
-  // 🔴 prevent crash
-  if (!currentUser) return null;
-
   // ✅ SOCKET SETUP
   useEffect(() => {
+    if (!currentUser) return;
+
     let socketInstance;
 
     const setupSocket = async () => {
@@ -52,6 +51,8 @@ export default function ChatLayout() {
 
   // ✅ FETCH CHAT ROOMS
   useEffect(() => {
+    if (!currentUser) return;
+
     const fetchData = async () => {
       try {
         const res = await getChatRooms(currentUser.uid);
