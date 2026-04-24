@@ -13,108 +13,84 @@ import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
 
 export default function ChatLayout() {
-  const [users, SetUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [chatRooms, setChatRooms] = useState([]);
-  const [filteredRooms, setFilteredRooms] = useState([]);
-
   const [currentChat, setCurrentChat] = useState();
-  const [onlineUsersId, setonlineUsersId] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const [isContact, setIsContact] = useState(false);
+  const [onlineUsersId, setOnlineUsersId] = useState([]);
 
   const socket = useRef();
-
   const { currentUser } = useAuth();
 
+  // 🔴 prevent crash
+  if (!currentUser) return null;
+
+  // ✅ SOCKET SETUP
   useEffect(() => {
-    const getSocket = async () => {
-      const res = await initiateSocketConnection();
-      socket.current = res;
-      socket.current.emit("addUser", currentUser.uid);
-      socket.current.on("getUsers", (users) => {
-        const userId = users.map((u) => u[0]);
-        setonlineUsersId(userId);
-      });
+    let socketInstance;
+
+    const setupSocket = async () => {
+      try {
+        socketInstance = await initiateSocketConnection();
+        socket.current = socketInstance;
+
+        socketInstance.emit("addUser", currentUser.uid);
+
+        socketInstance.on("getUsers", (users) => {
+          setOnlineUsersId(users.map((u) => u[0]));
+        });
+      } catch (err) {
+        console.error("Socket error:", err);
+      }
     };
 
-    getSocket();
-  }, [currentUser.uid]);
+    setupSocket();
 
+    return () => {
+      socketInstance?.disconnect();
+    };
+  }, [currentUser]);
+
+  // ✅ FETCH CHAT ROOMS
   useEffect(() => {
     const fetchData = async () => {
-      const res = await getChatRooms(currentUser.uid);
-      setChatRooms(res);
+      try {
+        const res = await getChatRooms(currentUser.uid);
+        setChatRooms(res || []);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchData();
-  }, [currentUser.uid]);
+  }, [currentUser]);
 
+  // ✅ FETCH USERS
   useEffect(() => {
     const fetchData = async () => {
-      const res = await getAllUsers();
-      SetUsers(res);
+      try {
+        const res = await getAllUsers();
+        setUsers(res || []);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchData();
   }, []);
 
-  useEffect(() => {
-    setFilteredUsers(users);
-    setFilteredRooms(chatRooms);
-  }, [users, chatRooms]);
-
-  useEffect(() => {
-    if (isContact) {
-      setFilteredUsers([]);
-    } else {
-      setFilteredRooms([]);
-    }
-  }, [isContact]);
-
   const handleChatChange = (chat) => {
     setCurrentChat(chat);
   };
 
-  const handleSearch = (newSearchQuery) => {
-    setSearchQuery(newSearchQuery);
-
-    const searchedUsers = users.filter((user) => {
-      return user.displayName
-        .toLowerCase()
-        .includes(newSearchQuery.toLowerCase());
-    });
-
-    const searchedUsersId = searchedUsers.map((u) => u.uid);
-
-    // If there are initial contacts
-    if (chatRooms.length !== 0) {
-      chatRooms.forEach((chatRoom) => {
-        // Check if searched user is a contact or not.
-        const isUserContact = chatRoom.members.some(
-          (e) => e !== currentUser.uid && searchedUsersId.includes(e)
-        );
-        setIsContact(isUserContact);
-
-        isUserContact
-          ? setFilteredRooms([chatRoom])
-          : setFilteredUsers(searchedUsers);
-      });
-    } else {
-      setFilteredUsers(searchedUsers);
-    }
-  };
-
   return (
     <div className="container mx-auto">
-      <div className="min-w-full bg-white border-x border-b border-gray-200 dark:bg-gray-900 dark:border-gray-700 rounded lg:grid lg:grid-cols-3">
-        <div className="bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-700 lg:col-span-1">
-          <SearchUsers handleSearch={handleSearch} />
+      <div className="min-w-full bg-white border rounded lg:grid lg:grid-cols-3">
+        <div className="border-r lg:col-span-1">
+          <SearchUsers handleSearch={() => {}} />
 
           <AllUsers
-            users={searchQuery !== "" ? filteredUsers : users}
-            chatRooms={searchQuery !== "" ? filteredRooms : chatRooms}
+            users={users}
+            chatRooms={chatRooms}
             setChatRooms={setChatRooms}
             onlineUsersId={onlineUsersId}
             currentUser={currentUser}
