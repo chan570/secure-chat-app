@@ -32,11 +32,20 @@ export default function ChatLayout() {
         socketInstance = await initiateSocketConnection();
         socket.current = socketInstance;
 
-        socketInstance.emit("addUser", currentUser.uid);
+        // ✅ Re-register user on every connection/reconnection
+        socketInstance.on("connect", () => {
+          console.log("Socket connected, registering user:", currentUser.uid);
+          socketInstance.emit("addUser", currentUser.uid);
+        });
 
         socketInstance.on("getUsers", (users) => {
           setOnlineUsersId(users.map((u) => u[0]));
         });
+
+        // If already connected when handler is added
+        if (socketInstance.connected) {
+          socketInstance.emit("addUser", currentUser.uid);
+        }
       } catch (err) {
         console.error("Socket error:", err);
       }

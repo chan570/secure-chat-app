@@ -39,34 +39,48 @@ const io = new Server(server, {
 
 io.use(VerifySocketToken);
 
-global.onlineUsers = new Map();
-
-const getKey = (map, val) => {
-  for (let [key, value] of map.entries()) {
-    if (value === val) return key;
-  }
-};
+// Using a local map for better performance and scoping
+const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  global.chatSocket = socket;
+  console.log(`User connected: ${socket.id}`);
 
   socket.on("addUser", (userId) => {
     onlineUsers.set(userId, socket.id);
-    socket.emit("getUsers", Array.from(onlineUsers));
+    console.log(`User registered: ${userId} with socket ${socket.id}`);
+    // ✅ BROADCAST to all users that someone new is online
+    io.emit("getUsers", Array.from(onlineUsers));
   });
 
   socket.on("sendMessage", ({ senderId, receiverId, message }) => {
-    const sendUserSocket = onlineUsers.get(receiverId);
-    if (sendUserSocket) {
-      socket.to(sendUserSocket).emit("getMessage", {
+    console.log(`Attempting to send message from ${senderId} to ${receiverId}`);
+    const receiverSocketId = onlineUsers.get(receiverId);
+    
+    if (receiverSocketId) {
+      console.log(`Receiver ${receiverId} is online at socket ${receiverSocketId}. Sending...`);
+      io.to(receiverSocketId).emit("getMessage", {
         senderId,
         message,
       });
+    } else {
+      console.log(`Receiver ${receiverId} is OFFLINE. Message will be fetched from DB next time they open chat.`);
     }
   });
 
   socket.on("disconnect", () => {
-    onlineUsers.delete(getKey(onlineUsers, socket.id));
-    socket.emit("getUsers", Array.from(onlineUsers));
+    let disconnectedUserId = null;
+    for (let [userId, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        disconnectedUserId = userId;
+        break;
+      }
+    }
+    
+    if (disconnectedUserId) {
+      onlineUsers.delete(disconnectedUserId);
+      console.log(`User disconnected: ${disconnectedUserId}`);
+      // ✅ BROADCAST updated list to all users
+      io.emit("getUsers", Array.from(onlineUsers));
+    }
   });
 });
