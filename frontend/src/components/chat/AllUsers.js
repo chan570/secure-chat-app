@@ -93,6 +93,7 @@ export default function AllUsers({
                 chatRoom={chatRoom}
                 onlineUsersId={onlineUsersId}
                 currentUser={currentUser}
+                users={users}
               />
             </li>
           ))

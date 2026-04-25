@@ -5,7 +5,7 @@ import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
 
-export default function ChatRoom({ currentChat, currentUser, socket }) {
+export default function ChatRoom({ currentChat, currentUser, socket, users }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef();
 
@@ -72,7 +72,7 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-white/30 dark:bg-gray-900/30">
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50">
-        <Contact chatRoom={currentChat} currentUser={currentUser} />
+        <Contact chatRoom={currentChat} currentUser={currentUser} users={users} />
       </div>
 
       <div className="flex-1 p-6 overflow-y-auto scroll-smooth">
