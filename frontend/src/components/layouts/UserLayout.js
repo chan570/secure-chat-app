@@ -1,15 +1,28 @@
 export default function UserLayout({ user, onlineUsersId }) {
+  const isOnline = onlineUsersId?.includes(user?.uid);
+
   return (
-    <div className="relative flex items-center">
-      <img className="w-10 h-10 rounded-full" src={user?.photoURL} alt="" />
-      <span className="block ml-2 text-gray-500 dark:text-gray-400">
-        {user?.displayName}
-      </span>
-      {onlineUsersId?.includes(user?.uid) ? (
-        <span className="bottom-0 left-7 absolute  w-3.5 h-3.5 bg-green-500 dark:bg-green-400 border-2 border-white rounded-full"></span>
-      ) : (
-        <span className="bottom-0 left-7 absolute  w-3.5 h-3.5 bg-gray-400 border-2 border-white rounded-full"></span>
-      )}
+    <div className="relative flex items-center p-1">
+      <div className="relative">
+        <img 
+          className="w-10 h-10 rounded-full object-cover shadow-sm border border-gray-200 dark:border-gray-700" 
+          src={user?.photoURL} 
+          alt={user?.displayName || "User"} 
+        />
+        <span 
+          className={`absolute bottom-0 right-0 w-3 h-3 border-2 border-white dark:border-gray-900 rounded-full ${
+            isOnline ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]" : "bg-gray-400"
+          }`}
+        ></span>
+      </div>
+      <div className="ml-3 overflow-hidden">
+        <span className="block text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">
+          {user?.displayName}
+        </span>
+        <span className="block text-xs text-gray-500 dark:text-gray-400 truncate">
+          {isOnline ? "Online" : "Offline"}
+        </span>
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Fragment, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dialog, Transition } from "@headlessui/react";
-import { ExclamationIcon } from "@heroicons/react/outline";
+import { ExclamationTriangleIcon as ExclamationIcon } from "@heroicons/react/24/outline";
 
 import { useAuth } from "../../contexts/AuthContext";
 

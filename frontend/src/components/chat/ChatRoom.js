@@ -70,10 +70,12 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
   };
 
   return (
-    <div className="lg:col-span-2">
-      <Contact chatRoom={currentChat} currentUser={currentUser} />
+    <div className="flex-1 flex flex-col h-full bg-white/30 dark:bg-gray-900/30">
+      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50">
+        <Contact chatRoom={currentChat} currentUser={currentUser} />
+      </div>
 
-      <div className="p-6 h-[30rem] overflow-y-auto">
+      <div className="flex-1 p-6 overflow-y-auto scroll-smooth">
         {messages.map((msg, i) => (
           <div key={msg._id || i} ref={scrollRef}>
             <Message message={msg} self={currentUser.uid} />

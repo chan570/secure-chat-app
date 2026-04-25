@@ -70,22 +70,22 @@ export default function AllUsers({
   };
 
   return (
-    <ul className="overflow-auto h-[30rem]">
+    <div className="flex-1 overflow-y-auto pb-4">
       {/* Chats Section */}
-      <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">
-        Chats
+      <h2 className="px-5 py-3 text-xs font-bold tracking-wider text-gray-500 dark:text-gray-400 uppercase sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10">
+        Recent Chats
       </h2>
 
-      <li>
+      <ul className="space-y-1 px-3">
         {(chatRooms || []).length > 0 ? (
           chatRooms.map((chatRoom, index) => (
-            <div
+            <li
               key={index}
               className={classNames(
                 index === selectedChat
-                  ? "bg-gray-100 dark:bg-gray-700"
-                  : "transition duration-150 ease-in-out cursor-pointer bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700",
-                "flex items-center px-3 py-2 text-sm"
+                  ? "bg-indigo-50 dark:bg-indigo-500/20 border-indigo-100 dark:border-indigo-500/30 shadow-sm"
+                  : "hover:bg-white/60 dark:hover:bg-gray-800/60 border-transparent hover:shadow-sm hover:translate-x-1",
+                "transition-all duration-200 ease-in-out cursor-pointer rounded-xl border p-2 group"
               )}
               onClick={() => changeCurrentChat(index, chatRoom)}
             >
@@ -94,36 +94,36 @@ export default function AllUsers({
                 onlineUsersId={onlineUsersId}
                 currentUser={currentUser}
               />
-            </div>
+            </li>
           ))
         ) : (
-          <p className="ml-2 text-gray-500">No chats yet</p>
+          <p className="px-4 py-2 text-sm text-gray-400 italic">No recent chats</p>
         )}
-      </li>
+      </ul>
 
       {/* Other Users Section */}
-      <h2 className="my-2 mb-2 ml-2 text-gray-900 dark:text-white">
-        Other Users
+      <h2 className="px-5 py-3 mt-4 text-xs font-bold tracking-wider text-gray-500 dark:text-gray-400 uppercase sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10">
+        Discover
       </h2>
 
-      <li>
+      <ul className="space-y-1 px-3">
         {(nonContacts || []).length > 0 ? (
           nonContacts.map((nonContact, index) => (
-            <div
+            <li
               key={index}
-              className="flex items-center px-3 py-2 text-sm bg-white border-b border-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer"
+              className="transition-all duration-200 ease-in-out cursor-pointer rounded-xl border border-transparent hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-sm hover:translate-x-1 p-2 group"
               onClick={() => handleNewChatRoom(nonContact)}
             >
               <UserLayout
                 user={nonContact}
                 onlineUsersId={onlineUsersId}
               />
-            </div>
+            </li>
           ))
         ) : (
-          <p className="ml-2 text-gray-500">No users available</p>
+          <p className="px-4 py-2 text-sm text-gray-400 italic">No new users</p>
         )}
-      </li>
-    </ul>
+      </ul>
+    </div>
   );
 }
