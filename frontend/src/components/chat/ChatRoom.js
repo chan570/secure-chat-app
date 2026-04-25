@@ -29,16 +29,17 @@ export default function ChatRoom({ currentChat, currentUser, socket }) {
   }, [messages]);
 
   useEffect(() => {
-    if (!socket.current) return;
+    const currentSocket = socket.current;
+    if (!currentSocket) return;
 
     const handler = (data) => {
       setMessages((prev) => [...prev, data]);
     };
 
-    socket.current.on("getMessage", handler);
+    currentSocket.on("getMessage", handler);
 
     return () => {
-      socket.current.off("getMessage", handler);
+      currentSocket.off("getMessage", handler);
     };
   }, [socket]);
 
