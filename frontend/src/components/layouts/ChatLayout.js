@@ -95,7 +95,13 @@ export default function ChatLayout() {
   return (
     <div className="container mx-auto p-4 max-w-7xl">
       <div className="glass rounded-2xl overflow-hidden lg:grid lg:grid-cols-3 h-[calc(100vh-6rem)] shadow-2xl flex flex-col">
-        <div className="border-r border-gray-200/50 dark:border-gray-700/50 lg:col-span-1 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md flex flex-col overflow-hidden">
+        {/* Sidebar: Hidden on mobile when a chat is selected */}
+        <div 
+          className={`
+            border-r border-gray-200/50 dark:border-gray-700/50 lg:col-span-1 bg-white/40 dark:bg-gray-900/40 backdrop-blur-md flex flex-col overflow-hidden h-full
+            ${currentChat ? 'hidden lg:flex' : 'flex'}
+          `}
+        >
           <SearchUsers handleSearch={() => {}} />
 
           <AllUsers
@@ -108,13 +114,20 @@ export default function ChatLayout() {
           />
         </div>
 
-        <div className="lg:col-span-2 flex flex-col bg-white/60 dark:bg-gray-900/60 backdrop-blur-md relative h-full">
+        {/* Chat Area: Hidden on mobile when no chat is selected */}
+        <div 
+          className={`
+            lg:col-span-2 flex flex-col bg-white/60 dark:bg-gray-900/60 backdrop-blur-md relative h-full
+            ${currentChat ? 'flex' : 'hidden lg:flex'}
+          `}
+        >
           {currentChat ? (
             <ChatRoom
               currentChat={currentChat}
               currentUser={currentUser}
               socket={socket}
               users={users}
+              onBack={() => setCurrentChat(undefined)}
             />
           ) : (
             <Welcome />

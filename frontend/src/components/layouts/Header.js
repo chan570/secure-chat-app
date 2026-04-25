@@ -12,7 +12,7 @@ export default function Header() {
 
   return (
     <>
-      <nav className="fixed w-full z-50 top-0 left-0 border-b border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl shadow-sm transition-colors duration-300">
+      <nav className="sticky w-full z-50 top-0 left-0 border-b border-gray-200 dark:border-gray-800 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl shadow-sm transition-colors duration-300">
         <div className="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
@@ -50,8 +50,6 @@ export default function Header() {
           </div>
         </div>
       </nav>
-      {/* Spacer to push content below the fixed header */}
-      <div className="h-16"></div>
       
       {modal && <Logout modal={modal} setModal={setModal} />}
     </>

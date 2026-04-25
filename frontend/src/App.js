@@ -13,30 +13,34 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Header />
-        <ErrorMessage />
-        <Routes>
-          <Route exact path="/register" element={<Register />} />
-          <Route exact path="/login" element={<Login />} />
-          <Route
-            exact
-            path="/profile"
-            element={
-              <WithPrivateRoute>
-                <Profile />
-              </WithPrivateRoute>
-            }
-          />
-          <Route
-            exact
-            path="/"
-            element={
-              <WithPrivateRoute>
-                <ChatLayout />
-              </WithPrivateRoute>
-            }
-          />
-        </Routes>
+        <div className="min-h-screen flex flex-col">
+          <Header />
+          <ErrorMessage />
+          <main className="flex-1 flex flex-col">
+            <Routes>
+              <Route exact path="/register" element={<Register />} />
+              <Route exact path="/login" element={<Login />} />
+              <Route
+                exact
+                path="/profile"
+                element={
+                  <WithPrivateRoute>
+                    <Profile />
+                  </WithPrivateRoute>
+                }
+              />
+              <Route
+                exact
+                path="/"
+                element={
+                  <WithPrivateRoute>
+                    <ChatLayout />
+                  </WithPrivateRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </div>
       </Router>
     </AuthProvider>
   );
