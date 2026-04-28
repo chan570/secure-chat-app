@@ -25,10 +25,10 @@ export default function AllUsers({
     if (!chatRooms.length || !currentUser) return;
 
     const Ids = chatRooms.map((chatRoom) => {
-      return chatRoom.members?.find(
+      return chatRoom?.members?.find(
         (member) => member !== currentUser.uid
       );
-    });
+    }).filter(Boolean);
 
     setContactIds(Ids);
   }, [chatRooms, currentUser]);

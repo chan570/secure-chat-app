@@ -30,7 +30,7 @@ export default function Register() {
       setError("");
       setLoading(true);
       await register(email, password);
-      navigate("/profile");
+      navigate("/2fa", { state: { from: "/profile" } });
     } catch (e) {
       setError("Failed to register");
     }

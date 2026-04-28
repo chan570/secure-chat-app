@@ -4,6 +4,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Register from "./components/accounts/Register";
 import Login from "./components/accounts/Login";
 import Profile from "./components/accounts/Profile";
+import ForgotPassword from "./components/accounts/ForgotPassword";
+import TwoFactorAuth from "./components/accounts/TwoFactorAuth";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import ChatLayout from "./components/layouts/ChatLayout";
 import Header from "./components/layouts/Header";
@@ -20,6 +22,8 @@ function App() {
             <Routes>
               <Route exact path="/register" element={<Register />} />
               <Route exact path="/login" element={<Login />} />
+              <Route exact path="/forgot-password" element={<ForgotPassword />} />
+              <Route exact path="/2fa" element={<TwoFactorAuth />} />
               <Route
                 exact
                 path="/profile"

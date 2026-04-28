@@ -4,6 +4,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 
 import auth from "../config/firebase";
@@ -16,6 +17,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState();
+  const [is2FAVerified, set2FAVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,7 +30,12 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
+    set2FAVerified(false);
     return signOut(auth);
+  }
+
+  function resetPassword(email) {
+    return sendPasswordResetEmail(auth, email);
   }
 
   function updateUserProfile(user, profile) {
@@ -38,6 +45,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setCurrentUser(user);
+      if (!user) set2FAVerified(false);
       setLoading(false);
     });
 
@@ -46,11 +54,14 @@ export function AuthProvider({ children }) {
 
   const value = {
     currentUser,
+    is2FAVerified,
+    set2FAVerified,
     error,
     setError,
     login,
     register,
     logout,
+    resetPassword,
     updateUserProfile,
   };
 

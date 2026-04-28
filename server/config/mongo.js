@@ -8,6 +8,8 @@ const MONGO_URI = process.env.MONGO_URI;
 mongoose.connect(MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+}).catch(err => {
+  console.error("Initial Mongo connection error:", err.message);
 });
 
 mongoose.connection.on("connected", () => {
