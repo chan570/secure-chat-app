@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { MagnifyingGlassIcon, FunnelIcon, ChatBubbleLeftEllipsisIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { sendChatRequest } from "../../services/ChatService";
-import { useAuth } from "../../contexts/AuthContext";
 import Contact from "./Contact";
 import UserLayout from "../layouts/UserLayout";
 import Logout from "../accounts/Logout";

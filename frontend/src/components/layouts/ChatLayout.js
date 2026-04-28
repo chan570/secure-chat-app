@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import { getChatRoomsOfUser } from "../../services/ChatService";
-import { getAllUsers } from "../../services/UserService";
+import { getChatRooms, getAllUsers } from "../../services/ChatService";
 import AllUsers from "../chat/AllUsers";
 import ChatRoom from "../chat/ChatRoom";
-import WelcomeChat from "../chat/WelcomeChat";
+import Welcome from "../chat/Welcome";
 
 export default function ChatLayout({ currentUser }) {
   const [chatRooms, setChatRooms] = useState([]);
@@ -35,7 +34,7 @@ export default function ChatLayout({ currentUser }) {
     const fetchData = async () => {
       try {
         const [roomsRes, usersRes] = await Promise.all([
-          getChatRoomsOfUser(currentUser.uid),
+          getChatRooms(currentUser.uid),
           getAllUsers()
         ]);
         setChatRooms(roomsRes || []);
@@ -82,7 +81,7 @@ export default function ChatLayout({ currentUser }) {
             onBack={() => setCurrentChat(null)}
           />
         ) : (
-          <WelcomeChat />
+          <Welcome />
         )}
       </div>
     </div>

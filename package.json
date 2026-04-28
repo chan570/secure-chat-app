@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
-    "build": "cd frontend && npm install && npm run build"
+    "build": "cd frontend && npm install && npx cross-env GENERATE_SOURCEMAP=false npm run build"
   },
   "keywords": [],
   "author": "",
