@@ -11,6 +11,7 @@ import ChatRoom from "../chat/ChatRoom";
 import Welcome from "../chat/Welcome";
 import AllUsers from "../chat/AllUsers";
 import SearchUsers from "../chat/SearchUsers";
+import ChatRequests from "../chat/ChatRequests";
 
 export default function ChatLayout() {
   const [users, setUsers] = useState([]);
@@ -103,6 +104,11 @@ export default function ChatLayout() {
           `}
         >
           <SearchUsers handleSearch={() => {}} />
+
+          <ChatRequests 
+            currentUser={currentUser} 
+            setChatRooms={setChatRooms} 
+          />
 
           <AllUsers
             users={users}

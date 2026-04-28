@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { createChatRoom } from "../../services/ChatService";
+import { sendChatRequest } from "../../services/ChatService";
 import Contact from "./Contact";
 import UserLayout from "../layouts/UserLayout";
 
@@ -19,6 +19,7 @@ export default function AllUsers({
   const [selectedChat, setSelectedChat] = useState();
   const [nonContacts, setNonContacts] = useState([]);
   const [contactIds, setContactIds] = useState([]);
+  const [requestSentTo, setRequestSentTo] = useState([]);
 
   // Extract contact IDs safely
   useEffect(() => {
@@ -51,21 +52,20 @@ export default function AllUsers({
     changeChat(chat);
   };
 
-  const handleNewChatRoom = async (user) => {
+  const handleSendRequest = async (user) => {
+    if (requestSentTo.includes(user.uid)) return;
+
     try {
-      const members = {
+      const body = {
         senderId: currentUser.uid,
         receiverId: user.uid,
       };
 
-      const res = await createChatRoom(members);
-
-      // Safe update
-      setChatRooms((prev = []) => [...prev, res]);
-
-      changeChat(res);
+      await sendChatRequest(body);
+      setRequestSentTo((prev) => [...prev, user.uid]);
+      alert(`Chat request sent to ${user.displayName || "user"}!`);
     } catch (err) {
-      console.error("Error creating chat room:", err);
+      console.error("Error sending chat request:", err);
     }
   };
 
@@ -112,13 +112,23 @@ export default function AllUsers({
           nonContacts.map((nonContact, index) => (
             <li
               key={index}
-              className="transition-all duration-200 ease-in-out cursor-pointer rounded-xl border border-transparent hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-sm hover:translate-x-1 p-2 group"
-              onClick={() => handleNewChatRoom(nonContact)}
+              className={classNames(
+                requestSentTo.includes(nonContact.uid) 
+                  ? "opacity-60 cursor-default" 
+                  : "cursor-pointer hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-sm hover:translate-x-1",
+                "transition-all duration-200 ease-in-out rounded-xl border border-transparent p-2 group relative"
+              )}
+              onClick={() => handleSendRequest(nonContact)}
             >
               <UserLayout
                 user={nonContact}
                 onlineUsersId={onlineUsersId}
               />
+              {requestSentTo.includes(nonContact.uid) && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-full uppercase tracking-tighter">
+                  Request Sent
+                </span>
+              )}
             </li>
           ))
         ) : (

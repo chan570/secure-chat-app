@@ -140,3 +140,41 @@ export const sendMessage = async (messageBody) => {
     console.error("sendMessage error:", e);
   }
 };
+
+// ================= CHAT REQUESTS =================
+export const sendChatRequest = async (requestBody) => {
+  const header = await createHeader();
+
+  try {
+    const res = await axios.post(`${API_BASE_URL}/request`, requestBody, header);
+    return res.data;
+  } catch (e) {
+    console.error("sendChatRequest error:", e);
+  }
+};
+
+export const getChatRequests = async (userId) => {
+  const header = await createHeader();
+
+  try {
+    const res = await axios.get(`${API_BASE_URL}/request/${userId}`, header);
+    return res.data;
+  } catch (e) {
+    console.error("getChatRequests error:", e);
+  }
+};
+
+export const updateChatRequestStatus = async (requestId, status) => {
+  const header = await createHeader();
+
+  try {
+    const res = await axios.put(
+      `${API_BASE_URL}/request/${requestId}`,
+      { status },
+      header
+    );
+    return res.data;
+  } catch (e) {
+    console.error("updateChatRequestStatus error:", e);
+  }
+};
