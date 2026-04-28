@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
+import ChatRoom from "./models/ChatRoom.js";
 
 import "./config/mongo.js";
 
@@ -54,20 +55,38 @@ io.on("connection", (socket) => {
     io.emit("getUsers", Array.from(onlineUsers));
   });
 
-  socket.on("sendMessage", ({ senderId, receiverId, message, chatRoomId, type }) => {
+  socket.on("sendMessage", async ({ senderId, receiverId, message, chatRoomId, type }) => {
     console.log(`Attempting to send message from ${senderId} to ${receiverId}`);
-    const receiverSocketId = onlineUsers.get(receiverId);
     
-    if (receiverSocketId) {
-      console.log(`Receiver ${receiverId} is online at socket ${receiverSocketId}. Sending...`);
-      io.to(receiverSocketId).emit("getMessage", {
-        senderId,
-        message,
-        chatRoomId,
-        type,
+    try {
+      // Validate chat room exists and both users are members
+      const chatRoom = await ChatRoom.findById(chatRoomId);
+      if (!chatRoom || !chatRoom.members.includes(senderId) || !chatRoom.members.includes(receiverId)) {
+        console.log(`Unauthorized: Invalid chat room or user not a member`);
+        socket.emit("messageError", { 
+          message: "You cannot send messages to this user. Permission denied." 
+        });
+        return;
+      }
+
+      const receiverSocketId = onlineUsers.get(receiverId);
+      
+      if (receiverSocketId) {
+        console.log(`Receiver ${receiverId} is online at socket ${receiverSocketId}. Sending...`);
+        io.to(receiverSocketId).emit("getMessage", {
+          senderId,
+          message,
+          chatRoomId,
+          type,
+        });
+      } else {
+        console.log(`Receiver ${receiverId} is OFFLINE. Message will be fetched from DB next time they open chat.`);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      socket.emit("messageError", { 
+        message: "Error sending message. Please try again." 
       });
-    } else {
-      console.log(`Receiver ${receiverId} is OFFLINE. Message will be fetched from DB next time they open chat.`);
     }
   });
 
@@ -75,6 +94,27 @@ io.on("connection", (socket) => {
     const receiverSocketId = onlineUsers.get(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("messagesRead", { chatRoomId, userId });
+    }
+  });
+
+  // 🔔 NEW: Emit event when a chat request is created
+  socket.on("requestSent", ({ senderId, receiverId }) => {
+    const receiverSocketId = onlineUsers.get(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newChatRequest", { senderId });
+    }
+  });
+
+  // 🔔 NEW: Emit event when a chat request is accepted or declined
+  socket.on("requestStatusChanged", ({ senderId, receiverId, status }) => {
+    const senderSocketId = onlineUsers.get(senderId);
+    const receiverSocketId = onlineUsers.get(receiverId);
+    
+    if (senderSocketId) {
+      io.to(senderSocketId).emit("chatRequestResponse", { 
+        receiverId, 
+        status 
+      });
     }
   });
 

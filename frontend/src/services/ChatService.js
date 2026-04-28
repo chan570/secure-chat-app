@@ -193,3 +193,25 @@ export const markMessagesAsRead = async (chatRoomId, userId) => {
     console.error("markMessagesAsRead error:", e);
   }
 };
+
+// ================= HELPER FUNCTIONS =================
+// Check if a user has permission to chat with another user
+export const checkChatPermission = (currentUserId, otherUserId, chatRooms) => {
+  return chatRooms.some((room) =>
+    room.members.includes(currentUserId) && room.members.includes(otherUserId)
+  );
+};
+
+// Get pending requests sent to a user
+export const getPendingRequestsFromUser = async (userId) => {
+  const header = await createHeader();
+
+  try {
+    // Get all pending requests for this user
+    const requests = await axios.get(`${API_BASE_URL}/request/${userId}`, header);
+    return requests.data || [];
+  } catch (e) {
+    console.error("getPendingRequestsFromUser error:", e);
+    return [];
+  }
+};

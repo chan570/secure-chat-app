@@ -1,9 +1,25 @@
 import ChatMessage from "../models/ChatMessage.js";
+import ChatRoom from "../models/ChatRoom.js";
 
 export const createMessage = async (req, res) => {
-  const newMessage = new ChatMessage(req.body);
-
   try {
+    const { chatRoomId, sender } = req.body;
+    
+    // Validate that the chat room exists and the sender is a member
+    const chatRoom = await ChatRoom.findById(chatRoomId);
+    if (!chatRoom) {
+      return res.status(403).json({ 
+        message: "Chat room does not exist. Please send a chat request first." 
+      });
+    }
+    
+    if (!chatRoom.members.includes(sender)) {
+      return res.status(403).json({ 
+        message: "You are not a member of this chat room." 
+      });
+    }
+
+    const newMessage = new ChatMessage(req.body);
     await newMessage.save();
     res.status(201).json(newMessage);
   } catch (error) {

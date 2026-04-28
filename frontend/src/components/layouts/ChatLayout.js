@@ -4,6 +4,7 @@ import { getChatRooms, getAllUsers } from "../../services/ChatService";
 import AllUsers from "../chat/AllUsers";
 import ChatRoom from "../chat/ChatRoom";
 import Welcome from "../chat/Welcome";
+import ChatRequests from "../chat/ChatRequests";
 
 export default function ChatLayout({ currentUser }) {
   const [chatRooms, setChatRooms] = useState([]);
@@ -51,12 +52,16 @@ export default function ChatLayout({ currentUser }) {
   };
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-[#f0f2f5] dark:bg-[#0b141a]">
+    <div className="flex-1 flex overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Sidebar - Chat List & Discover */}
       <div className={classNames(
         currentChat ? "hidden lg:flex" : "flex",
-        "w-full lg:w-[400px] xl:w-[450px] flex-col border-r border-gray-300 dark:border-gray-700/50 bg-white dark:bg-[#111b21] z-30"
+        "w-full lg:w-[400px] xl:w-[450px] flex-col border-r border-gray-200 dark:border-gray-700/50 bg-white dark:bg-slate-800 z-30 shadow-sm"
       )}>
+        {/* Chat Requests Section */}
+        <ChatRequests currentUser={currentUser} setChatRooms={setChatRooms} socket={socket} />
+        
+        {/* All Users Section */}
         <AllUsers
           users={users}
           chatRooms={chatRooms}
@@ -70,7 +75,7 @@ export default function ChatLayout({ currentUser }) {
       {/* Main Chat Area */}
       <div className={classNames(
         !currentChat ? "hidden lg:flex" : "flex",
-        "flex-1 flex-col relative"
+        "flex-1 flex-col relative bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900"
       )}>
         {currentChat ? (
           <ChatRoom
