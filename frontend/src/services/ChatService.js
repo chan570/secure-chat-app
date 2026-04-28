@@ -178,3 +178,18 @@ export const updateChatRequestStatus = async (requestId, status) => {
     console.error("updateChatRequestStatus error:", e);
   }
 };
+
+export const markMessagesAsRead = async (chatRoomId, userId) => {
+  const header = await createHeader();
+
+  try {
+    const res = await axios.put(
+      `${API_BASE_URL}/message/markAsRead/${chatRoomId}/${userId}`,
+      {},
+      header
+    );
+    return res.data;
+  } catch (e) {
+    console.error("markMessagesAsRead error:", e);
+  }
+};

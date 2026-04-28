@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { getMessagesOfChatRoom, sendMessage } from "../../services/ChatService";
-
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../config/firebase";
+import { getMessagesOfChatRoom, sendMessage, markMessagesAsRead } from "../../services/ChatService";
 import Message from "./Message";
 import Contact from "./Contact";
 import ChatForm from "./ChatForm";
+import { encryptMessage } from "../../utils/Encryption";
 
 export default function ChatRoom({ currentChat, currentUser, socket, users, onBack }) {
   const [messages, setMessages] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const scrollRef = useRef();
 
   useEffect(() => {
@@ -17,13 +20,21 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
       try {
         const res = await getMessagesOfChatRoom(currentChat._id);
         setMessages(res || []);
+        
+        await markMessagesAsRead(currentChat._id, currentUser.uid);
+        
+        socket.current.emit("markAsRead", {
+          chatRoomId: currentChat._id,
+          userId: currentUser.uid,
+          receiverId: currentChat.members.find(m => m !== currentUser.uid)
+        });
       } catch (err) {
         console.error(err);
       }
     };
 
     fetchData();
-  }, [currentChat]);
+  }, [currentChat, currentUser.uid, socket]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -35,33 +46,72 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
 
     const handler = (data) => {
       setMessages((prev) => [...prev, data]);
+      
+      if (data.chatRoomId === currentChat?._id && data.sender !== currentUser.uid) {
+        markMessagesAsRead(currentChat._id, currentUser.uid);
+        currentSocket.emit("markAsRead", {
+          chatRoomId: currentChat._id,
+          userId: currentUser.uid,
+          receiverId: data.sender
+        });
+      }
+    };
+
+    const readHandler = ({ chatRoomId }) => {
+      if (chatRoomId === currentChat?._id) {
+        setMessages((prev) => prev.map(m => ({ ...m, isRead: true })));
+      }
     };
 
     currentSocket.on("getMessage", handler);
+    currentSocket.on("messagesRead", readHandler);
 
     return () => {
       currentSocket.off("getMessage", handler);
+      currentSocket.off("messagesRead", readHandler);
     };
-  }, [socket]);
+  }, [socket, currentChat, currentUser.uid]);
 
-  const handleFormSubmit = async (message) => {
-    if (!message) return;
+  const handleFormSubmit = async (content, type = "text") => {
+    if (!content) return;
 
     const receiverId = currentChat.members.find(
       (m) => m !== currentUser.uid
     );
 
+    let messageToSend = content;
+
+    if (type === "image") {
+      try {
+        setUploading(true);
+        const storageRef = ref(storage, `chats/${currentChat._id}/${Date.now()}_${content.name}`);
+        const snapshot = await uploadBytes(storageRef, content);
+        messageToSend = await getDownloadURL(snapshot.ref);
+        setUploading(false);
+      } catch (err) {
+        console.error("Upload error:", err);
+        setUploading(false);
+        return;
+      }
+    }
+
+    // Encrypt message (images are URLs, we can encrypt them too for privacy)
+    const encryptedMessage = encryptMessage(messageToSend, currentChat._id);
+
     socket.current.emit("sendMessage", {
       senderId: currentUser.uid,
       receiverId,
-      message,
+      message: encryptedMessage,
+      chatRoomId: currentChat._id,
+      type
     });
 
     try {
       const res = await sendMessage({
         chatRoomId: currentChat._id,
         sender: currentUser.uid,
-        message,
+        message: encryptedMessage,
+        type
       });
 
       setMessages((prev) => [...prev, res]);
@@ -73,7 +123,6 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
   return (
     <div className="flex-1 flex flex-col h-full bg-white/30 dark:bg-gray-900/30">
       <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 flex items-center">
-        {/* Back button only visible on mobile */}
         <button
           onClick={onBack}
           className="lg:hidden ml-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -93,6 +142,13 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
             <Message message={msg} self={currentUser.uid} />
           </div>
         ))}
+        {uploading && (
+          <div className="flex justify-end mb-4">
+             <div className="bg-indigo-100 dark:bg-indigo-900/30 px-4 py-2 rounded-xl animate-pulse text-xs text-indigo-600 dark:text-indigo-400">
+               Uploading image...
+             </div>
+          </div>
+        )}
       </div>
 
       <ChatForm handleFormSubmit={handleFormSubmit} />

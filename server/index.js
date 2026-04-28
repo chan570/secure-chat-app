@@ -54,7 +54,7 @@ io.on("connection", (socket) => {
     io.emit("getUsers", Array.from(onlineUsers));
   });
 
-  socket.on("sendMessage", ({ senderId, receiverId, message }) => {
+  socket.on("sendMessage", ({ senderId, receiverId, message, chatRoomId, type }) => {
     console.log(`Attempting to send message from ${senderId} to ${receiverId}`);
     const receiverSocketId = onlineUsers.get(receiverId);
     
@@ -63,9 +63,18 @@ io.on("connection", (socket) => {
       io.to(receiverSocketId).emit("getMessage", {
         senderId,
         message,
+        chatRoomId,
+        type,
       });
     } else {
       console.log(`Receiver ${receiverId} is OFFLINE. Message will be fetched from DB next time they open chat.`);
+    }
+  });
+
+  socket.on("markAsRead", ({ chatRoomId, userId, receiverId }) => {
+    const receiverSocketId = onlineUsers.get(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("messagesRead", { chatRoomId, userId });
     }
   });
 

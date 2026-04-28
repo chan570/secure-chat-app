@@ -1,20 +1,28 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
-import { FaceSmileIcon } from "@heroicons/react/24/outline";
+import { FaceSmileIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import EmojiPicker from "emoji-picker-react";
 
 export default function ChatForm({ handleFormSubmit }) {
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const fileInputRef = useRef();
 
   const handleEmojiClick = (emojiData) => {
     setMessage((prev) => prev + emojiData.emoji);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      handleFormSubmit(file, "image");
+    }
+  };
+
   const submit = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
-    handleFormSubmit(message);
+    handleFormSubmit(message, "text");
     setMessage("");
     setShowEmojiPicker(false);
   };
@@ -39,6 +47,21 @@ export default function ChatForm({ handleFormSubmit }) {
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
           >
             <FaceSmileIcon className="h-6 w-6" />
+          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileChange}
+          />
+          <button 
+            type="button"
+            className="text-gray-400 hover:text-indigo-500 transition-colors ml-2 focus:outline-none"
+            onClick={() => fileInputRef.current.click()}
+          >
+            <PhotoIcon className="h-6 w-6" />
           </button>
 
           <input
