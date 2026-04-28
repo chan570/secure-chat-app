@@ -28,6 +28,7 @@ export default function ChatRequests({ currentUser, setChatRooms }) {
     // Refresh every 30 seconds
     const interval = setInterval(fetchRequests, 30000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const handleAction = async (requestId, status) => {
