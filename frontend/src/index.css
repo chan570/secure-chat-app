@@ -49,4 +49,36 @@ body,
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-400 dark:bg-gray-600; 
   }
+
+  /* WhatsApp Theme Utilities */
+  .wa-bg {
+    background-color: #e5ddd5;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-blend-mode: overlay;
+  }
+
+  .dark .wa-bg {
+    background-color: #0b141a;
+    background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+    background-blend-mode: soft-light;
+    opacity: 0.8;
+  }
+
+  .wa-bubble-sender {
+    @apply bg-[#dcf8c6] dark:bg-[#005c4b] text-[#303030] dark:text-[#e9edef] rounded-lg shadow-sm relative;
+  }
+
+  .wa-bubble-receiver {
+    @apply bg-white dark:bg-[#202c33] text-[#303030] dark:text-[#e9edef] rounded-lg shadow-sm relative;
+  }
+
+  .wa-bubble-sender::after {
+    content: "";
+    @apply absolute top-0 -right-2 w-0 h-0 border-[10px] border-t-[#dcf8c6] dark:border-t-[#005c4b] border-r-transparent border-b-transparent border-l-transparent;
+  }
+
+  .wa-bubble-receiver::after {
+    content: "";
+    @apply absolute top-0 -left-2 w-0 h-0 border-[10px] border-t-white dark:border-t-[#202c33] border-l-transparent border-b-transparent border-r-transparent;
+  }
 }

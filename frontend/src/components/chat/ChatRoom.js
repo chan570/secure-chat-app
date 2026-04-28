@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, EllipsisVerticalIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../config/firebase";
 import { getMessagesOfChatRoom, sendMessage, markMessagesAsRead } from "../../services/ChatService";
@@ -95,7 +95,6 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
       }
     }
 
-    // Encrypt message (images are URLs, we can encrypt them too for privacy)
     const encryptedMessage = encryptMessage(messageToSend, currentChat._id);
 
     socket.current.emit("sendMessage", {
@@ -121,22 +120,27 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white/30 dark:bg-gray-900/30">
-      <div className="sticky top-0 z-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 flex items-center">
-        <button
-          onClick={onBack}
-          className="lg:hidden ml-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title="Back to contacts"
-        >
-          <ChevronLeftIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-        </button>
-        
-        <div className="flex-1">
+    <div className="flex-1 flex flex-col h-full bg-[#f0f2f5] dark:bg-[#0b141a]">
+      {/* WhatsApp Header */}
+      <div className="bg-[#f0f2f5] dark:bg-[#202c33] border-l border-gray-300 dark:border-gray-700/50 py-2.5 px-4 flex items-center justify-between z-20">
+        <div className="flex items-center flex-1">
+          <button
+            onClick={onBack}
+            className="lg:hidden mr-3 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <ChevronLeftIcon className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+          </button>
           <Contact chatRoom={currentChat} currentUser={currentUser} users={users} />
+        </div>
+        
+        <div className="flex items-center gap-5 mr-2">
+          <MagnifyingGlassIcon className="h-5 w-5 text-[#54656f] dark:text-[#aebac1] cursor-pointer" />
+          <EllipsisVerticalIcon className="h-5 w-5 text-[#54656f] dark:text-[#aebac1] cursor-pointer" />
         </div>
       </div>
 
-      <div className="flex-1 p-6 overflow-y-auto scroll-smooth">
+      {/* WhatsApp Background Wallpaper */}
+      <div className="flex-1 overflow-y-auto wa-bg p-4 lg:p-8 space-y-2">
         {messages.map((msg, i) => (
           <div key={msg._id || i} ref={scrollRef}>
             <Message message={msg} self={currentUser.uid} />
@@ -144,8 +148,8 @@ export default function ChatRoom({ currentChat, currentUser, socket, users, onBa
         ))}
         {uploading && (
           <div className="flex justify-end mb-4">
-             <div className="bg-indigo-100 dark:bg-indigo-900/30 px-4 py-2 rounded-xl animate-pulse text-xs text-indigo-600 dark:text-indigo-400">
-               Uploading image...
+             <div className="bg-[#dcf8c6] dark:bg-[#005c4b] px-4 py-2 rounded-xl animate-pulse text-xs text-gray-600 dark:text-gray-200 shadow-sm">
+               Uploading...
              </div>
           </div>
         )}

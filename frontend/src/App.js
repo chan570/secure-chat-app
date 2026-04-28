@@ -8,17 +8,15 @@ import ForgotPassword from "./components/accounts/ForgotPassword";
 import TwoFactorAuth from "./components/accounts/TwoFactorAuth";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import ChatLayout from "./components/layouts/ChatLayout";
-import Header from "./components/layouts/Header";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
-          <Header />
+        <div className="h-screen flex flex-col overflow-hidden">
           <ErrorMessage />
-          <main className="flex-1 flex flex-col">
+          <main className="flex-1 flex flex-col overflow-hidden">
             <Routes>
               <Route exact path="/register" element={<Register />} />
               <Route exact path="/login" element={<Login />} />

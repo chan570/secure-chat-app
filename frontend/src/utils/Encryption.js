@@ -13,12 +13,17 @@ export const encryptMessage = (message, roomId) => {
  * Decrypts an AES encrypted message.
  */
 export const decryptMessage = (ciphertext, roomId) => {
+  if (!ciphertext) return "";
+  
   try {
     const secretKey = roomId || "fallback-secret-key";
     const bytes = CryptoJS.AES.decrypt(ciphertext, secretKey);
     const originalText = bytes.toString(CryptoJS.enc.Utf8);
-    return originalText || "[Decryption Error]";
+    
+    // If originalText is empty, it might be a non-encrypted legacy message
+    return originalText || ciphertext;
   } catch (e) {
-    return "[Encrypted Message]";
+    // If it fails, it's likely not an encrypted message, return as is
+    return ciphertext;
   }
 };

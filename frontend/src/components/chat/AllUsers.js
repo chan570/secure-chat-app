@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
-
+import { Link } from "react-router-dom";
+import { MagnifyingGlassIcon, FunnelIcon, ChatBubbleLeftEllipsisIcon, EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { sendChatRequest } from "../../services/ChatService";
+import { useAuth } from "../../contexts/AuthContext";
 import Contact from "./Contact";
 import UserLayout from "../layouts/UserLayout";
+import Logout from "../accounts/Logout";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -20,8 +23,10 @@ export default function AllUsers({
   const [nonContacts, setNonContacts] = useState([]);
   const [contactIds, setContactIds] = useState([]);
   const [requestSentTo, setRequestSentTo] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
-  // Extract contact IDs safely
   useEffect(() => {
     if (!chatRooms.length || !currentUser) return;
 
@@ -34,7 +39,6 @@ export default function AllUsers({
     setContactIds(Ids);
   }, [chatRooms, currentUser]);
 
-  // Filter non-contact users safely
   useEffect(() => {
     if (!users.length || !currentUser) return;
 
@@ -69,72 +73,131 @@ export default function AllUsers({
     }
   };
 
+  const filteredChatRooms = chatRooms.filter(room => {
+    const otherMemberId = room.members.find(m => m !== currentUser.uid);
+    const user = users.find(u => u.uid === otherMemberId);
+    return user?.displayName?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
   return (
-    <div className="flex-1 overflow-y-auto pb-4">
-      {/* Chats Section */}
-      <h2 className="px-5 py-3 text-xs font-bold tracking-wider text-gray-500 dark:text-gray-400 uppercase sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10">
-        Recent Chats
-      </h2>
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#111b21]">
+      {/* WhatsApp Sidebar Header */}
+      <div className="bg-[#f0f2f5] dark:bg-[#202c33] px-4 py-2 flex items-center justify-between">
+        <Link to="/profile">
+          <img 
+            src={currentUser?.photoURL || "https://www.gravatar.com/avatar/000?d=mp"} 
+            alt="Profile" 
+            className="h-10 w-10 rounded-full cursor-pointer hover:opacity-80 transition-opacity object-cover"
+          />
+        </Link>
+        <div className="flex items-center gap-5 mr-1">
+          <ChatBubbleLeftEllipsisIcon className="h-6 w-6 text-[#54656f] dark:text-[#aebac1] cursor-pointer" />
+          <div className="relative">
+             <EllipsisVerticalIcon 
+              className="h-6 w-6 text-[#54656f] dark:text-[#aebac1] cursor-pointer" 
+              onClick={() => setShowMenu(!showMenu)}
+             />
+             {showMenu && (
+               <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#233138] shadow-lg rounded-md py-1 z-50 animate-fade-in">
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-[#d1d7db] hover:bg-[#f5f6f6] dark:hover:bg-[#111b21]">Profile</Link>
+                  <button 
+                    onClick={() => { setShowLogoutModal(true); setShowMenu(false); }}
+                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 dark:text-[#d1d7db] hover:bg-[#f5f6f6] dark:hover:bg-[#111b21]"
+                  >
+                    Logout
+                  </button>
+               </div>
+             )}
+          </div>
+        </div>
+      </div>
 
-      <ul className="space-y-1 px-3">
-        {(chatRooms || []).length > 0 ? (
-          chatRooms.map((chatRoom, index) => (
-            <li
-              key={index}
-              className={classNames(
-                index === selectedChat
-                  ? "bg-indigo-50 dark:bg-indigo-500/20 border-indigo-100 dark:border-indigo-500/30 shadow-sm"
-                  : "hover:bg-white/60 dark:hover:bg-gray-800/60 border-transparent hover:shadow-sm hover:translate-x-1",
-                "transition-all duration-200 ease-in-out cursor-pointer rounded-xl border p-2 group"
-              )}
-              onClick={() => changeCurrentChat(index, chatRoom)}
-            >
-              <Contact
-                chatRoom={chatRoom}
-                onlineUsersId={onlineUsersId}
-                currentUser={currentUser}
-                users={users}
-              />
-            </li>
-          ))
-        ) : (
-          <p className="px-4 py-2 text-sm text-gray-400 italic">No recent chats</p>
-        )}
-      </ul>
+      {/* Search Bar */}
+      <div className="px-3 py-2 flex items-center gap-2">
+        <div className="flex-1 flex items-center bg-[#f0f2f5] dark:bg-[#202c33] rounded-lg px-3 py-1.5">
+          <MagnifyingGlassIcon className="h-4 w-4 text-[#54656f] dark:text-[#aebac1]" />
+          <input 
+            type="text"
+            placeholder="Search or start new chat"
+            className="flex-1 bg-transparent border-none focus:ring-0 text-[14px] ml-4 text-gray-700 dark:text-[#d1d7db] placeholder-[#8696a0]"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <FunnelIcon className="h-5 w-5 text-[#54656f] dark:text-[#aebac1] cursor-pointer" />
+      </div>
 
-      {/* Other Users Section */}
-      <h2 className="px-5 py-3 mt-4 text-xs font-bold tracking-wider text-gray-500 dark:text-gray-400 uppercase sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-10">
-        Discover
-      </h2>
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Chats Section */}
+        <div className="mt-2">
+          {filteredChatRooms.length > 0 ? (
+            filteredChatRooms.map((chatRoom, index) => (
+              <div
+                key={chatRoom._id || index}
+                className={classNames(
+                  index === selectedChat
+                    ? "bg-[#f0f2f5] dark:bg-[#2a3942]"
+                    : "hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]",
+                  "cursor-pointer transition-colors duration-200"
+                )}
+                onClick={() => changeCurrentChat(index, chatRoom)}
+              >
+                <div className="border-b border-[#f0f2f5] dark:border-[#222d34] ml-[74px] py-3 pr-4 -ml-[0px] pl-4">
+                  <Contact
+                    chatRoom={chatRoom}
+                    onlineUsersId={onlineUsersId}
+                    currentUser={currentUser}
+                    users={users}
+                  />
+                </div>
+              </div>
+            ))
+          ) : searchTerm && (
+            <p className="px-4 py-4 text-center text-sm text-gray-500 dark:text-[#8696a0]">No chats found</p>
+          )}
+        </div>
 
-      <ul className="space-y-1 px-3">
-        {(nonContacts || []).length > 0 ? (
-          nonContacts.map((nonContact, index) => (
-            <li
-              key={index}
-              className={classNames(
-                requestSentTo.includes(nonContact.uid) 
-                  ? "opacity-60 cursor-default" 
-                  : "cursor-pointer hover:bg-white/60 dark:hover:bg-gray-800/60 hover:shadow-sm hover:translate-x-1",
-                "transition-all duration-200 ease-in-out rounded-xl border border-transparent p-2 group relative"
-              )}
-              onClick={() => handleSendRequest(nonContact)}
-            >
-              <UserLayout
-                user={nonContact}
-                onlineUsersId={onlineUsersId}
-              />
-              {requestSentTo.includes(nonContact.uid) && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded-full uppercase tracking-tighter">
-                  Request Sent
-                </span>
-              )}
-            </li>
-          ))
-        ) : (
-          <p className="px-4 py-2 text-sm text-gray-400 italic">No new users</p>
-        )}
-      </ul>
+        {/* Discover Section */}
+        <div className="mt-6 pb-4">
+          <h3 className="px-4 py-2 text-[14px] font-semibold text-[#00a884] uppercase tracking-wide">
+            Discover People
+          </h3>
+          {nonContacts.length > 0 ? (
+            nonContacts.map((nonContact) => (
+              <div
+                key={nonContact.uid}
+                className={classNames(
+                  requestSentTo.includes(nonContact.uid) 
+                    ? "opacity-60 cursor-default" 
+                    : "cursor-pointer hover:bg-[#f5f6f6] dark:hover:bg-[#202c33]",
+                  "transition-colors duration-200 relative group"
+                )}
+                onClick={() => handleSendRequest(nonContact)}
+              >
+                <div className="border-b border-[#f0f2f5] dark:border-[#222d34] py-3 px-4">
+                  <UserLayout
+                    user={nonContact}
+                    onlineUsersId={onlineUsersId}
+                  />
+                  {requestSentTo.includes(nonContact.uid) ? (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#00a884] bg-[#00a884]/10 px-2 py-0.5 rounded-md">
+                      SENT
+                    </span>
+                  ) : (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-[#00a884] opacity-0 group-hover:opacity-100 transition-opacity">
+                      SEND REQUEST
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="px-4 py-4 text-sm text-gray-400 italic text-center">No new users to discover</p>
+          )}
+        </div>
+      </div>
+      
+      {showLogoutModal && <Logout modal={showLogoutModal} setModal={setShowLogoutModal} />}
     </div>
   );
 }

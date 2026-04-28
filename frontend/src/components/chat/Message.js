@@ -14,44 +14,49 @@ export default function Message({ message, self }) {
     <div
       className={classNames(
         isSender ? "justify-end" : "justify-start",
-        "flex mb-4 animate-fade-in-up"
+        "flex mb-3 animate-fade-in-up"
       )}
     >
-      <div className={classNames("flex flex-col", isSender ? "items-end" : "items-start", "max-w-[75%]")}>
+      <div className={classNames("flex flex-col", isSender ? "items-end" : "items-start", "max-w-[85%] lg:max-w-[65%]")}>
         <div
           className={classNames(
-            isSender
-              ? "bg-gradient-to-tr from-indigo-500 to-purple-600 text-white shadow-[0_4px_14px_0_rgba(99,102,241,0.39)] rounded-2xl rounded-tr-sm"
-              : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-700 shadow-sm rounded-2xl rounded-tl-sm",
-            isImage ? "p-1.5" : "px-5 py-3",
-            "relative"
+            isSender ? "wa-bubble-sender" : "wa-bubble-receiver",
+            isImage ? "p-1" : "px-3 py-2 pb-1.5",
+            "min-w-[60px]"
           )}
         >
           {isImage ? (
-            <div className="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+            <div className="rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
               <img 
                 src={decryptedContent} 
                 alt="Sent" 
-                className="max-w-full max-h-64 object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                className="max-w-full max-h-80 object-cover hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 onClick={() => window.open(decryptedContent, '_blank')}
               />
             </div>
           ) : (
-            <span className="block font-normal text-sm leading-relaxed whitespace-pre-wrap break-words">
+            <p className="text-[14.2px] leading-relaxed whitespace-pre-wrap break-words pr-2">
               {decryptedContent}
-            </span>
+            </p>
           )}
           
           <div className={classNames(
-            "flex justify-end mt-1",
-            isImage ? "px-2 pb-1" : ""
+            "flex justify-end items-center gap-1 mt-0.5 select-none",
+            isImage ? "absolute bottom-2 right-2 bg-black/30 px-1.5 py-0.5 rounded-full backdrop-blur-sm" : ""
           )}>
+            <span className={classNames(
+              "text-[10px]",
+              isImage ? "text-white" : "text-gray-500 dark:text-gray-400"
+            )}>
+              {format(message.createdAt)}
+            </span>
+
              {isSender && (
               <span className={classNames(
-                message.isRead ? "text-sky-300" : isImage ? "text-gray-400" : "text-white/60",
-                "text-[12px] flex items-center ml-2"
+                message.isRead ? "text-[#34b7f1]" : isImage ? "text-white/70" : "text-gray-400 dark:text-gray-500",
+                "text-[12px] flex items-center"
               )}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M7 13l3 3 7-7" />
                   <path d="M12 13l3 3 7-7" />
                 </svg>
@@ -59,9 +64,6 @@ export default function Message({ message, self }) {
             )}
           </div>
         </div>
-        <span className="block text-[10px] text-gray-400 dark:text-gray-500 mt-1 mx-1">
-          {format(message.createdAt)}
-        </span>
       </div>
     </div>
   );
